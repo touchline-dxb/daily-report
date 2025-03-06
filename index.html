@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Sports Report Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 1rem;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .logo-preview {
+            max-width: 200px;
+            margin: 0 auto 1rem;
+        }
+
+        .report-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-group {
+            margin: 1.5rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #444;
+            font-weight: 500;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .dynamic-entry {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .remove-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dynamic-entry {
+                grid-template-columns: 1fr;
+            }
+        }
+        .generate-btn{
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
+    margin: 2rem auto 0;
+    width: fit-content;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="logo-t.png" alt="Academy Logo" class="logo-preview">
+            <h1>Daily Sports Report Generator</h1>
+        </div>
+
+        <!-- Basic Information Section -->
+        <div class="report-section">
+            <h3 class="section-title">📅 Basic Information</h3>
+            <div class="input-group">
+                <div>
+                    <label>Date</label>
+                    <input type="date" id="reportDate" required>
+                </div>
+                <div>
+                    <label>Report By</label>
+                    <select id="touchlineName" required>
+                        <option value="">Select Staff</option>
+                        <option>Syed</option>
+                        <option>Ramees</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coach Attendance -->
+        <div class="report-section">
+            <h3 class="section-title">👨🏫 Coach Attendance</h3>
+            <div>
+                <label>Present Coaches (comma separated)</label>
+                <input type="text" id="coachesPresent" required>
+            </div>
+        </div>
+
+        <!-- Student Attendance -->
+        <div class="report-section">
+            <h3 class="section-title">👥 Student Attendance</h3>
+            <div class="input-group">
+                <div>
+                    <label>Number of Present Students</label>
+                    <input type="number" id="totalPresent" required>
+                </div>
+                <div>
+                    <label>Absent Students with Reasons (one per line)</label>
+                    <textarea id="studentsAbsent" rows="4"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admissions Section -->
+        <div class="report-section">
+            <h3 class="section-title">🎓 New Admissions</h3>
+            <div id="admissionsContainer">
+                <div class="dynamic-entry">
+                    <input type="text" placeholder="Student Name" class="adm-name">
+                    <select class="adm-program">
+                        <option>Weekly & Weekend Sessions</option>
+                        <option>GoalKeeper Training</option>
+                        <option>Personal 1-1 Training</option>
+                        <option>Corporate Team Training</option>
+                        <option>Adult Football Training</option>
+
+                    </select>
+                    <input type="number" placeholder="Reg Fee" class="adm-reg-fee">
+                    <input type="number" placeholder="Monthly Fee" class="adm-monthly-fee">
+                    <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addAdmission()">+ Add Admission</button>
+        </div>
+
+        <!-- Other Payments -->
+        <div class="report-section">
+            <h3 class="section-title">💸 Additional Payments</h3>
+            <div id="paymentsContainer">
+                <div class="dynamic-entry">
+                    <select class="pay-type">
+                        <option>Monthly Fee</option>
+                        <option>Personal Session</option>
+                        <option>Equipment</option>
+                    </select>
+                    <input type="text" placeholder="Student Name" class="pay-student">
+                    <input type="number" placeholder="Amount" class="pay-amount">
+                    <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addPayment()">+ Add Payment</button>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="report-section">
+            <h3 class="section-title">📋 Tasks & Status</h3>
+            <div id="tasksContainer">
+                <div class="dynamic-entry">
+                    <input type="text" placeholder="Task Description" class="task-desc">
+                    <select class="task-assigned">
+                        <option>Coach John</option>
+                        <option>Coach Sarah</option>
+                        <option>Manager David</option>
+                    </select>
+                    <select class="task-status">
+                        <option>Completed</option>
+                        <option>Pending</option>
+                        <option>In Progress</option>
+                    </select>
+                    <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addTask()">+ Add Task</button>
+        </div>
+
+        <button class="generate-btn" onclick="generatePDF()">Generate Report</button>
+    </div>
+
+    <script>
+        // Dynamic Entry Management
+        function addAdmission() {
+            const entry = document.createElement('div');
+            entry.className = 'dynamic-entry';
+            entry.innerHTML = `
+                <input type="text" placeholder="Student Name" class="adm-name">
+                <select class="adm-program">
+                        <option>Weekly & Weekend Sessions</option>
+                        <option>GoalKeeper Training</option>
+                        <option>Personal 1-1 Training</option>
+                        <option>Corporate Team Training</option>
+                        <option>Adult Football Training</option>
+
+                    </select>
+                <input type="number" placeholder="Reg Fee" class="adm-reg-fee">
+                <input type="number" placeholder="Monthly Fee" class="adm-monthly-fee">
+                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+            `;
+            document.getElementById('admissionsContainer').appendChild(entry);
+        }
+
+        function addPayment() {
+            const entry = document.createElement('div');
+            entry.className = 'dynamic-entry';
+            entry.innerHTML = `
+                <select class="pay-type">
+                    <option>Monthly Fee</option>
+                    <option>Personal Session</option>
+                    <option>Equipment</option>
+                </select>
+                <input type="text" placeholder="Student Name" class="pay-student">
+                <input type="number" placeholder="Amount" class="pay-amount">
+                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+            `;
+            document.getElementById('paymentsContainer').appendChild(entry);
+        }
+
+        function addTask() {
+            const entry = document.createElement('div');
+            entry.className = 'dynamic-entry';
+            entry.innerHTML = `
+                <input type="text" placeholder="Task Description" class="task-desc">
+                <select class="task-assigned">
+                    <option>Coach John</option>
+                    <option>Coach Sarah</option>
+                    <option>Manager David</option>
+                </select>
+                <select class="task-status">
+                    <option>Completed</option>
+                    <option>Pending</option>
+                    <option>In Progress</option>
+                </select>
+                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+            `;
+            document.getElementById('tasksContainer').appendChild(entry);
+        }
+
+        function removeEntry(btn) {
+            btn.closest('.dynamic-entry').remove();
+        }
+
+        // PDF Generation
+        async function generatePDF() {
+            const doc = new jspdf.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Add Logo with aspect ratio preservation
+            const logoUrl = 'logo-t.png';
+    const logo = await loadImage(logoUrl);
+    const logoWidth = 40; // Fixed width
+    const logoHeight = (logo.naturalHeight / logo.naturalWidth) * logoWidth;
+    doc.addImage(logo, 'PNG', 15, 10, logoWidth, logoHeight);
+    
+    // Header: Position "DAILY REPORT" at the right side end of the logo row
+    const pageWidth = doc.internal.pageSize.width;
+    const logoX = 15; // X position of logo
+    const logoRightX = logoX + logoWidth; // Right end of the logo
+    const padding = 10; // Padding between logo and text
+    const textX = pageWidth - 15 - doc.getTextWidth('DAILY REPORT') - padding; // Position text at the right end
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text("DAILY REPORT", textX, 20 + logoHeight, { align: 'left' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(100);
+            doc.text(`Date: ${document.getElementById('reportDate').value}`, 15, 30 + logoHeight);
+            doc.text(`Report By: ${document.getElementById('touchlineName').value}`, 15, 35 + logoHeight);
+
+            let yPos = 40 + logoHeight;
+
+            // Coach Attendance
+            doc.setFontSize(14);
+            doc.setTextColor(40);
+            doc.text("Coach Attendance", 15, yPos);
+            yPos += 7;
+            
+            const coaches = document.getElementById('coachesPresent').value.split(',');
+            doc.setFontSize(12);
+            coaches.forEach((coach, index) => {
+                doc.text(`• ${coach.trim()}`, 20, yPos + (index * 5));
+            });
+            yPos += coaches.length * 5 + 10;
+
+            // Student Attendance
+            doc.setFontSize(14);
+            doc.text("Student Attendance", 15, yPos);
+            yPos += 7;
+            
+            const presentCount = document.getElementById('totalPresent').value;
+            const absentStudents = document.getElementById('studentsAbsent').value.split('\n');
+            
+            doc.autoTable({
+                startY: yPos,
+                columns: [
+                    {header: 'Total Present', dataKey: 'present'},
+                    {header: 'Absent Students', dataKey: 'absent'}
+                ],
+                body: [{
+                    present: presentCount,
+                    absent: absentStudents.map(a => `• ${a}`).join('\n')
+                }],
+                theme: 'grid',
+                styles: { fontSize: 10, cellPadding: 3 },
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            // Admissions
+            const admissions = Array.from(document.querySelectorAll('#admissionsContainer .dynamic-entry')).map(entry => ({
+                name: entry.querySelector('.adm-name').value,
+                program: entry.querySelector('.adm-program').value,
+                regFee: entry.querySelector('.adm-reg-fee').value,
+                monthlyFee: entry.querySelector('.adm-monthly-fee').value
+            }));
+
+            if(admissions.length > 0) {
+                doc.setFontSize(14);
+                doc.text("New Admissions", 15, yPos);
+                yPos += 7;
+                
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Student', 'Program', 'Reg Fee', 'Monthly Fee']],
+                    body: admissions.map(a => [a.name, a.program, a.regFee, a.monthlyFee]),
+                    theme: 'grid',
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            }
+
+            // Additional Payments
+            const payments = Array.from(document.querySelectorAll('#paymentsContainer .dynamic-entry')).map(entry => ({
+                type: entry.querySelector('.pay-type').value,
+                student: entry.querySelector('.pay-student').value,
+                amount: entry.querySelector('.pay-amount').value
+            }));
+
+            if(payments.length > 0) {
+                doc.setFontSize(14);
+                doc.text("Additional Payments", 15, yPos);
+                yPos += 7;
+                
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Type', 'Student', 'Amount']],
+                    body: payments.map(p => [p.type, p.student, p.amount]),
+                    theme: 'grid',
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            }
+
+            // Tasks
+            const tasks = Array.from(document.querySelectorAll('#tasksContainer .dynamic-entry')).map(entry => ({
+                description: entry.querySelector('.task-desc').value,
+                assigned: entry.querySelector('.task-assigned').value,
+                status: entry.querySelector('.task-status').value
+            }));
+
+            if(tasks.length > 0) {
+                doc.setFontSize(14);
+                doc.text("Tasks & Status", 15, yPos);
+                yPos += 7;
+                
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Description', 'Assigned To', 'Status']],
+                    body: tasks.map(t => [t.description, t.assigned, t.status]),
+                    theme: 'grid',
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+            }
+
+            doc.save(`daily-report-${document.getElementById('reportDate').value}.pdf`);
+        }
+
+        function loadImage(url) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => resolve(img);
+                img.src = url;
+            });
+        }
+    </script>
+</body>
+</html>
