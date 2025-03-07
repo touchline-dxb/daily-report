@@ -85,6 +85,7 @@
             gap: 1rem;
             align-items: center;
             margin-bottom: 1rem;
+            position: relative;
         }
 
         .remove-btn {
@@ -110,28 +111,20 @@
             margin-top: 1rem;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .dynamic-entry {
-                grid-template-columns: 1fr;
-            }
-        }
-        .generate-btn{
+        .generate-btn {
             background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-    color: white;
-    padding: 1rem 2.5rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: block;
-    margin: 2rem auto 0;
-    width: fit-content;
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            margin: 2rem auto 0;
+            width: fit-content;
         }
+
         .login-overlay {
             position: fixed;
             top: 0;
@@ -181,6 +174,26 @@
             display: none !important;
         }
 
+        .payment-method {
+            min-width: 100px;
+        }
+
+        .financial-summary {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dynamic-entry {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -197,8 +210,6 @@
     </div>
 
     <div class="container hidden" id="mainContent">
-
-    <div class="container">
         <div class="header">
             <img src="./logo-t.png" alt="Academy Logo" class="logo-preview">
             <h1>Daily Sports Report Generator</h1>
@@ -247,6 +258,25 @@
             </div>
         </div>
 
+        <!-- Expenses Section -->
+        <div class="report-section">
+            <h3 class="section-title">💸 Daily Expenses</h3>
+            <div id="expensesContainer">
+                <div class="dynamic-entry">
+                    <input type="text" placeholder="Expense Name" class="expense-name">
+                    <input type="text" placeholder="Description" class="expense-desc">
+                    <input type="number" placeholder="Amount" class="expense-amount">
+                    <select class="payment-method">
+                        <option>Cash</option>
+                        <option>Card</option>
+                        <option>Online</option>
+                    </select>
+                    <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addExpense()">+ Add Expense</button>
+        </div>
+
         <!-- Admissions Section -->
         <div class="report-section">
             <h3 class="section-title">🎓 New Admissions</h3>
@@ -259,19 +289,42 @@
                         <option>Personal 1-1 Training</option>
                         <option>Corporate Team Training</option>
                         <option>Adult Football Training</option>
-
                     </select>
                     <input type="number" placeholder="Reg Fee" class="adm-reg-fee">
                     <input type="number" placeholder="Monthly Fee" class="adm-monthly-fee">
+                    <select class="payment-method">
+                        <option>Cash</option>
+                        <option>Card</option>
+                        <option>Online</option>
+                    </select>
                     <button class="remove-btn" onclick="removeEntry(this)">×</button>
                 </div>
             </div>
             <button class="add-btn" onclick="addAdmission()">+ Add Admission</button>
         </div>
 
-        <!-- Other Payments -->
+        <!-- Trial Sessions -->
         <div class="report-section">
-            <h3 class="section-title">💸 Additional Payments</h3>
+            <h3 class="section-title">🎯 Trial Sessions</h3>
+            <div id="trialsContainer">
+                <div class="dynamic-entry">
+                    <input type="text" placeholder="Student Name" class="trial-name">
+                    <select class="trial-program">
+                        <option>Weekly & Weekend Sessions</option>
+                        <option>GoalKeeper Training</option>
+                        <option>Personal 1-1 Training</option>
+                        <option>Corporate Team Training</option>
+                        <option>Adult Football Training</option>
+                    </select>
+                    <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addTrial()">+ Add Trial</button>
+        </div>
+
+        <!-- Additional Payments -->
+        <div class="report-section">
+            <h3 class="section-title">💳 Additional Payments</h3>
             <div id="paymentsContainer">
                 <div class="dynamic-entry">
                     <select class="pay-type">
@@ -281,10 +334,16 @@
                     </select>
                     <input type="text" placeholder="Student Name" class="pay-student">
                     <input type="number" placeholder="Amount" class="pay-amount">
+                    <select class="payment-method">
+                        <option>Cash</option>
+                        <option>Card</option>
+                        <option>Online</option>
+                    </select>
                     <button class="remove-btn" onclick="removeEntry(this)">×</button>
                 </div>
             </div>
             <button class="add-btn" onclick="addPayment()">+ Add Payment</button>
+            
         </div>
 
         <!-- Tasks Section -->
@@ -294,9 +353,7 @@
                 <div class="dynamic-entry">
                     <input type="text" placeholder="Task Description" class="task-desc">
                     <select class="task-assigned">
-                        <option>Coach John</option>
-                        <option>Coach Sarah</option>
-                        <option>Manager David</option>
+                        <option>Sayed</option>
                     </select>
                     <select class="task-status">
                         <option>Completed</option>
@@ -311,24 +368,21 @@
 
         <button class="generate-btn" onclick="generatePDF()">Generate Report</button>
     </div>
-</div>
 
     <script>
-        // Login Configuration (Change these values)
+        // Login Configuration
         const VALID_CREDENTIALS = {
             username: "admin",
             password: "DXB@2024"
         };
 
-        // Check existing authentication
+        // Authentication Functions
         function checkAuth() {
             return localStorage.getItem('isAuthenticated') === 'true';
         }
 
-        // Login Form Handler
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
@@ -337,17 +391,14 @@
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
             } else {
-                alert('Invalid credentials! Please try again.');
+                alert('Invalid credentials!');
             }
         });
 
-        // Initial Load Check
         window.addEventListener('load', function() {
             if(checkAuth()) {
                 document.getElementById('loginOverlay').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
-            } else {
-                document.getElementById('loginOverlay').classList.remove('hidden');
             }
         });
 
@@ -358,15 +409,19 @@
             entry.innerHTML = `
                 <input type="text" placeholder="Student Name" class="adm-name">
                 <select class="adm-program">
-                        <option>Weekly & Weekend Sessions</option>
-                        <option>GoalKeeper Training</option>
-                        <option>Personal 1-1 Training</option>
-                        <option>Corporate Team Training</option>
-                        <option>Adult Football Training</option>
-
-                    </select>
+                    <option>Weekly & Weekend Sessions</option>
+                    <option>GoalKeeper Training</option>
+                    <option>Personal 1-1 Training</option>
+                    <option>Corporate Team Training</option>
+                    <option>Adult Football Training</option>
+                </select>
                 <input type="number" placeholder="Reg Fee" class="adm-reg-fee">
                 <input type="number" placeholder="Monthly Fee" class="adm-monthly-fee">
+                <select class="payment-method">
+                    <option>Cash</option>
+                    <option>Card</option>
+                    <option>Online</option>
+                </select>
                 <button class="remove-btn" onclick="removeEntry(this)">×</button>
             `;
             document.getElementById('admissionsContainer').appendChild(entry);
@@ -383,9 +438,48 @@
                 </select>
                 <input type="text" placeholder="Student Name" class="pay-student">
                 <input type="number" placeholder="Amount" class="pay-amount">
+                <select class="payment-method">
+                    <option>Cash</option>
+                    <option>Card</option>
+                    <option>Online</option>
+                </select>
                 <button class="remove-btn" onclick="removeEntry(this)">×</button>
             `;
             document.getElementById('paymentsContainer').appendChild(entry);
+        }
+
+        function addExpense() {
+            const entry = document.createElement('div');
+            entry.className = 'dynamic-entry';
+            entry.innerHTML = `
+                <input type="text" placeholder="Expense Name" class="expense-name">
+                <input type="text" placeholder="Description" class="expense-desc">
+                <input type="number" placeholder="Amount" class="expense-amount">
+                <select class="payment-method">
+                    <option>Cash</option>
+                    <option>Card</option>
+                    <option>Online</option>
+                </select>
+                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+            `;
+            document.getElementById('expensesContainer').appendChild(entry);
+        }
+
+        function addTrial() {
+            const entry = document.createElement('div');
+            entry.className = 'dynamic-entry';
+            entry.innerHTML = `
+                <input type="text" placeholder="Student Name" class="trial-name">
+                <select class="trial-program">
+                    <option>Weekly & Weekend Sessions</option>
+                    <option>GoalKeeper Training</option>
+                    <option>Personal 1-1 Training</option>
+                    <option>Corporate Team Training</option>
+                    <option>Adult Football Training</option>
+                </select>
+                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+            `;
+            document.getElementById('trialsContainer').appendChild(entry);
         }
 
         function addTask() {
@@ -394,9 +488,7 @@
             entry.innerHTML = `
                 <input type="text" placeholder="Task Description" class="task-desc">
                 <select class="task-assigned">
-                    <option>Coach John</option>
-                    <option>Coach Sarah</option>
-                    <option>Manager David</option>
+                    <option>Sayed</option>
                 </select>
                 <select class="task-status">
                     <option>Completed</option>
@@ -420,23 +512,19 @@
                 format: 'a4'
             });
 
-            // Add Logo with aspect ratio preservation
-            const logoUrl = 'logo-t.png';
-    const logo = await loadImage(logoUrl);
-    const logoWidth = 40; // Fixed width
-    const logoHeight = (logo.naturalHeight / logo.naturalWidth) * logoWidth;
-    doc.addImage(logo, 'PNG', 15, 10, logoWidth, logoHeight);
-    
-    // Header: Position "DAILY REPORT" at the right side end of the logo row
-    const pageWidth = doc.internal.pageSize.width;
-    const logoX = 15; // X position of logo
-    const logoRightX = logoX + logoWidth; // Right end of the logo
-    const padding = 10; // Padding between logo and text
-    const textX = pageWidth - 15 - doc.getTextWidth('DAILY REPORT') - padding; // Position text at the right end
+            // Add Logo
+            const logoUrl = './logo-t.png';
+            const logo = await loadImage(logoUrl);
+            const logoWidth = 40;
+            const logoHeight = (logo.naturalHeight / logo.naturalWidth) * logoWidth;
+            doc.addImage(logo, 'PNG', 15, 10, logoWidth, logoHeight);
 
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text("DAILY REPORT", textX, 20 + logoHeight, { align: 'left' });
+            // Header
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            const pageWidth = doc.internal.pageSize.width;
+            const textX = pageWidth - 15 - doc.getTextWidth('DAILY REPORT') - 10;
+            doc.text("DAILY REPORT", textX, 20 + logoHeight);
 
             doc.setFontSize(12);
             doc.setTextColor(100);
@@ -482,12 +570,37 @@
             });
             yPos = doc.lastAutoTable.finalY + 10;
 
+            // Expenses
+            const expenses = Array.from(document.querySelectorAll('#expensesContainer .dynamic-entry')).map(entry => ({
+                name: entry.querySelector('.expense-name').value,
+                desc: entry.querySelector('.expense-desc').value,
+                amount: entry.querySelector('.expense-amount').value,
+                method: entry.querySelector('.payment-method').value
+            }));
+
+            if(expenses.length > 0) {
+                doc.setFontSize(14);
+                doc.text("Expenses", 15, yPos);
+                yPos += 7;
+                
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Name', 'Description', 'Amount', 'Payment Method']],
+                    body: expenses.map(e => [e.name, e.desc, e.amount, e.method]),
+                    theme: 'grid',
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            }
+
             // Admissions
             const admissions = Array.from(document.querySelectorAll('#admissionsContainer .dynamic-entry')).map(entry => ({
                 name: entry.querySelector('.adm-name').value,
                 program: entry.querySelector('.adm-program').value,
                 regFee: entry.querySelector('.adm-reg-fee').value,
-                monthlyFee: entry.querySelector('.adm-monthly-fee').value
+                monthlyFee: entry.querySelector('.adm-monthly-fee').value,
+                method: entry.querySelector('.payment-method').value
             }));
 
             if(admissions.length > 0) {
@@ -497,8 +610,30 @@
                 
                 doc.autoTable({
                     startY: yPos,
-                    head: [['Student', 'Program', 'Reg Fee', 'Monthly Fee']],
-                    body: admissions.map(a => [a.name, a.program, a.regFee, a.monthlyFee]),
+                    head: [['Student', 'Program', 'Reg Fee', 'Monthly Fee', 'Payment Method']],
+                    body: admissions.map(a => [a.name, a.program, a.regFee, a.monthlyFee, a.method]),
+                    theme: 'grid',
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+                yPos = doc.lastAutoTable.finalY + 10;
+            }
+
+            // Trial Sessions
+            const trials = Array.from(document.querySelectorAll('#trialsContainer .dynamic-entry')).map(entry => ({
+                name: entry.querySelector('.trial-name').value,
+                program: entry.querySelector('.trial-program').value
+            }));
+
+            if(trials.length > 0) {
+                doc.setFontSize(14);
+                doc.text("Trial Sessions", 15, yPos);
+                yPos += 7;
+                
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Student', 'Program']],
+                    body: trials.map(t => [t.name, t.program]),
                     theme: 'grid',
                     styles: { fontSize: 10 },
                     headStyles: { fillColor: [44, 62, 80] }
@@ -510,7 +645,8 @@
             const payments = Array.from(document.querySelectorAll('#paymentsContainer .dynamic-entry')).map(entry => ({
                 type: entry.querySelector('.pay-type').value,
                 student: entry.querySelector('.pay-student').value,
-                amount: entry.querySelector('.pay-amount').value
+                amount: entry.querySelector('.pay-amount').value,
+                method: entry.querySelector('.payment-method').value
             }));
 
             if(payments.length > 0) {
@@ -520,8 +656,8 @@
                 
                 doc.autoTable({
                     startY: yPos,
-                    head: [['Type', 'Student', 'Amount']],
-                    body: payments.map(p => [p.type, p.student, p.amount]),
+                    head: [['Type', 'Student', 'Amount', 'Payment Method']],
+                    body: payments.map(p => [p.type, p.student, p.amount, p.method]),
                     theme: 'grid',
                     styles: { fontSize: 10 },
                     headStyles: { fillColor: [44, 62, 80] }
@@ -549,6 +685,7 @@
                     styles: { fontSize: 10 },
                     headStyles: { fillColor: [44, 62, 80] }
                 });
+                yPos = doc.lastAutoTable.finalY + 10;
             }
 
             doc.save(`daily-report-${document.getElementById('reportDate').value}.pdf`);
